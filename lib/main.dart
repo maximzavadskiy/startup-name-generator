@@ -51,6 +51,10 @@ class StartupNameList extends StatefulWidget {
 
 class _StartupNameListState extends State<StartupNameList> {
   Map<int, bool> namesSelected = {};
+  bool showOnlySelected = false;
+
+  final startupNames =
+      List<String>.generate(50, (index) => nextRandStartupName());
 
   @override
   Widget build(BuildContext context) {
@@ -61,29 +65,43 @@ class _StartupNameListState extends State<StartupNameList> {
     // fast, so that you can just rebuild anything that needs updating rather
     // than having to individually change instances of widgets.
     return Scaffold(
-        appBar: AppBar(
-          // Here we take the value from the MyHomePage object that was created by
-          // the App.build method, and use it to set our appbar title.
-          title: Text(widget.title),
-        ),
-        body: Scrollbar(
+      appBar: AppBar(
+        // Here we take the value from the MyHomePage object that was created by
+        // the App.build method, and use it to set our appbar title.
+        title: Text(widget.title),
+      ),
+      body: Scrollbar(
           child: ListView(
-            restorationId: 'list_view',
-            padding: const EdgeInsets.symmetric(vertical: 8),
-            children: [
-              for (int index = 1; index < 21; index++)
-                ListTile(
-                    leading: Checkbox(
-                    value:  namesSelected[index] ?? false,
-                    onChanged: (bool? value) {
-                      setState(() {
-                          namesSelected[index]  = value ?? false;
-                      });
-                    }),
-                    title: Text(nextRandStartupName())),
-            ],
-          ),
-        ));
+        restorationId: 'list_view',
+        padding: const EdgeInsets.symmetric(vertical: 8),
+        children: startupNames
+            .asMap()
+            .entries
+            .where((entry) =>
+                !showOnlySelected || (namesSelected[entry.key] ?? false))
+            .map((entry) {
+          int index = entry.key;
+          String name = entry.value;
+
+          return ListTile(
+              leading: Checkbox(
+                  value: namesSelected[index] ?? false,
+                  onChanged: (bool? value) {
+                    setState(() {
+                      namesSelected[index] = value ?? false;
+                    });
+                  }),
+              title: Text(name));
+        }).toList(),
+      )),
+      floatingActionButton: FloatingActionButton(
+        onPressed: () => setState(() {
+          showOnlySelected = !showOnlySelected;
+        }),
+        tooltip: 'Show selected',
+        child: const Icon(Icons.add),
+      ), // This trailing comma makes auto-formatting nicer for build methods.
+    );
   }
 }
 
