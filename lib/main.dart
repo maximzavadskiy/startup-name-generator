@@ -1,6 +1,6 @@
 import 'dart:math';
-
 import 'package:flutter/material.dart';
+import 'package:english_words/english_words.dart';
 
 void main() {
   runApp(const App());
@@ -50,11 +50,17 @@ class StartupNameList extends StatefulWidget {
 }
 
 class _StartupNameListState extends State<StartupNameList> {
-  Map<int, bool> namesSelected = {};
+  Map<WordPair, bool> namesSelected = {};
   bool showOnlySelected = false;
 
-  final startupNames =
-      List<String>.generate(50, (index) => nextRandStartupName());
+  final _startupNames = <WordPair>[];
+
+  List<WordPair> _getFilteredStartupNames() {
+    if(showOnlySelected) {
+      return _startupNames.where((wordpair) => namesSelected.containsKey(wordpair)).toList();
+    }
+    return _startupNames;
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -64,6 +70,7 @@ class _StartupNameListState extends State<StartupNameList> {
     // The Flutter framework has been optimized to make rerunning build methods
     // fast, so that you can just rebuild anything that needs updating rather
     // than having to individually change instances of widgets.
+    print(_getFilteredStartupNames().length);
     return Scaffold(
       appBar: AppBar(
         // Here we take the value from the MyHomePage object that was created by
@@ -71,25 +78,30 @@ class _StartupNameListState extends State<StartupNameList> {
         title: Text(widget.title),
       ),
       body: Scrollbar(
-          child: ListView(
+          child: ListView.builder(
         restorationId: 'list_view',
         padding: const EdgeInsets.symmetric(vertical: 8),
-        children: startupNames.asMap().entries.map((entry) {
-          int index = entry.key;
-          String name = entry.value;
-
-          return Visibility(
-              visible: !showOnlySelected || (namesSelected[entry.key] ?? false),
-              child: ListTile(
+        itemCount: showOnlySelected ? _getFilteredStartupNames().length : null,
+        itemBuilder:(context, index) {
+          var names = _getFilteredStartupNames();
+          print('index  $index');
+          var len = names.length;
+          print('names in list $len');
+          // Showing only selected causes index to overflow due to collapsed items, so we disable it here
+          if(!showOnlySelected && index >= _startupNames.length) {
+            // Generate more names when reaching end
+             _startupNames.addAll(generateWordPairs().take(10));
+          }
+          return ListTile(
                   leading: Checkbox(
-                      value: namesSelected[index] ?? false,
+                      value: namesSelected[names[index]] ?? false,
                       onChanged: (bool? value) {
                         setState(() {
-                          namesSelected[index] = value ?? false;
+                          namesSelected[names[index]] = value ?? false;
                         });
                       }),
-                  title: Text(name)));
-        }).toList(),
+                  title: Text(names[index].asPascalCase));
+        }
       )),
       floatingActionButton: FloatingActionButton(
           onPressed: () => setState(() {
@@ -104,6 +116,4 @@ class _StartupNameListState extends State<StartupNameList> {
   }
 }
 
-const wordParts = ['Coach', 'Tent', 'Obstacle', 'Teddy', 'Flora'];
-String nextRandWord() => wordParts[Random().nextInt(wordParts.length)];
-String nextRandStartupName() => nextRandWord() + nextRandWord();
+String nextRandStartupName() => WordPair.random().asPascalCase;
