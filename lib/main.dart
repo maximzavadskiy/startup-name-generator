@@ -30,15 +30,14 @@ class StartupNameList extends StatefulWidget {
 }
 
 class _StartupNameListState extends State<StartupNameList> {
-  Map<WordPair, bool> namesSelected = {};
-  bool showOnlySelected = false;
-
+  final Map<WordPair, bool> _namesSelected = {};
+  bool _showOnlySelected = false;
   final _startupNames = <WordPair>[];
 
   List<WordPair> _getFilteredStartupNames() {
-    if (showOnlySelected) {
+    if (_showOnlySelected) {
       return _startupNames
-          .where((wordpair) => namesSelected.containsKey(wordpair) && (namesSelected[wordpair] ?? false))
+          .where((wordpair) => _namesSelected.containsKey(wordpair) && (_namesSelected[wordpair] ?? false))
           .toList();
     }
     return _startupNames;
@@ -51,8 +50,8 @@ class _StartupNameListState extends State<StartupNameList> {
   void _toggleNameSelection(index) {
     var startupNames = _getFilteredStartupNames();
     setState(() {
-      namesSelected[startupNames[index]] =
-          !(namesSelected[startupNames[index]] ?? false);
+      _namesSelected[startupNames[index]] =
+          !(_namesSelected[startupNames[index]] ?? false);
     });
   }
 
@@ -68,7 +67,7 @@ class _StartupNameListState extends State<StartupNameList> {
               padding: const EdgeInsets.symmetric(vertical: 8),
               // Set strict item count when showing only selected to prevent from auto-generating new words
               itemCount:
-                  showOnlySelected ? _getFilteredStartupNames().length : null,
+                  _showOnlySelected ? _getFilteredStartupNames().length : null,
               itemBuilder: (context, index) {
                 var startupNames = _getFilteredStartupNames();
                 if (index >= startupNames.length) {
@@ -78,17 +77,17 @@ class _StartupNameListState extends State<StartupNameList> {
                 return ListTile(
                     onTap: () => _toggleNameSelection(index),
                     leading: Checkbox(
-                      value: namesSelected[startupNames[index]] ?? false,
+                      value: _namesSelected[startupNames[index]] ?? false,
                       onChanged: (value) => _toggleNameSelection(index),
                     ),
                     title: Text(startupNames[index].asPascalCase));
               })),
       floatingActionButton: FloatingActionButton(
           onPressed: () => setState(() {
-                showOnlySelected = !showOnlySelected;
+                _showOnlySelected = !_showOnlySelected;
               }),
           tooltip: 'Show selected',
-          child: showOnlySelected
+          child: _showOnlySelected
               ? const Icon(Icons.filter_alt_off)
               : const Icon(Icons.filter_alt)),
     );
