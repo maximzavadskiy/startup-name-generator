@@ -74,33 +74,32 @@ class _StartupNameListState extends State<StartupNameList> {
           child: ListView(
         restorationId: 'list_view',
         padding: const EdgeInsets.symmetric(vertical: 8),
-        children: startupNames
-            .asMap()
-            .entries
-            .where((entry) =>
-                !showOnlySelected || (namesSelected[entry.key] ?? false))
-            .map((entry) {
+        children: startupNames.asMap().entries.map((entry) {
           int index = entry.key;
           String name = entry.value;
 
-          return ListTile(
-              leading: Checkbox(
-                  value: namesSelected[index] ?? false,
-                  onChanged: (bool? value) {
-                    setState(() {
-                      namesSelected[index] = value ?? false;
-                    });
-                  }),
-              title: Text(name));
+          return Visibility(
+              visible: !showOnlySelected || (namesSelected[entry.key] ?? false),
+              child: ListTile(
+                  leading: Checkbox(
+                      value: namesSelected[index] ?? false,
+                      onChanged: (bool? value) {
+                        setState(() {
+                          namesSelected[index] = value ?? false;
+                        });
+                      }),
+                  title: Text(name)));
         }).toList(),
       )),
       floatingActionButton: FloatingActionButton(
-        onPressed: () => setState(() {
-          showOnlySelected = !showOnlySelected;
-        }),
-        tooltip: 'Show selected',
-        child: const Icon(Icons.add),
-      ), // This trailing comma makes auto-formatting nicer for build methods.
+          onPressed: () => setState(() {
+                showOnlySelected = !showOnlySelected;
+              }),
+          tooltip: 'Show selected',
+          child: showOnlySelected
+              ? const Icon(Icons.filter_alt_off)
+              : const Icon(Icons
+                  .filter_alt)), // This trailing comma makes auto-formatting nicer for build methods.
     );
   }
 }
